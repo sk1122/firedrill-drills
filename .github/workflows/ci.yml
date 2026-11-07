@@ -1,0 +1,38 @@
+name: ci
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.27"
+      # While sk1122/firedrill is private, FIREDRILL_SOURCE_TOKEN is a fine-grained
+      # token with read-only Contents on that repo alone.
+      - name: Install Firedrill
+        env:
+          GOPRIVATE: github.com/sk1122/firedrill
+          SOURCE_TOKEN: ${{ secrets.FIREDRILL_SOURCE_TOKEN }}
+          FIREDRILL_REF: a990ed613e11da59baedbafa07646866c7f7acfb
+        run: |
+          auth="url.https://x-access-token:${SOURCE_TOKEN}@github.com/sk1122/firedrill.insteadOf"
+          git config --global "$auth" https://github.com/sk1122/firedrill
+          go install "github.com/sk1122/firedrill/cmd/firedrill@${FIREDRILL_REF}"
+          git config --global --unset-all "$auth"
+      - name: Validate every drill
+        run: firedrill validate drills
+      - name: Run every drill's test cases
+        run: firedrill test drills
+      - name: Check the hub and write its index
+        run: firedrill hub index . --out site/index.json
+      - name: Build the website
+        run: firedrill hub site . --out site
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: hub-site
+          path: site

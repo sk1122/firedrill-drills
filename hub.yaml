@@ -1,0 +1,4 @@
+name: Firedrill Drill Hub
+# Packs maintained with Firedrill itself. firedrill hub update offers new
+# drills from these packs to every team.
+official: [access, agent, change, code, doors, gcp]
