@@ -1,0 +1,17 @@
+firedrill: v0
+id: gcp/no-project-wide-impersonation
+safeguard: "No person or group can act as every service account in a Google Cloud project."
+source: "https://hub.powerpipe.io/mods/turbot/gcp_compliance/controls/control.iam_user_not_assigned_service_account_user_role_project_level"
+author: "@sk1122"
+severity: high
+for_each: gcp.projects
+fetch:
+  bindings: { fact: gcp.iam_bindings }
+applies_when: bindings.size() > 0
+na_reason: "the project has no IAM bindings"
+pass_when:
+  - >-
+    bindings.filter(b, b.role in ["roles/iam.serviceAccountUser", "roles/iam.serviceAccountTokenCreator"] &&
+    b.member_type in ["user", "group", "domain", "deleted_user", "deleted_group"]).size() == 0
+fix: "Remove Service Account User and Service Account Token Creator from the project's IAM policy, and grant them on the one service account each person needs instead."
+maps_to: [SOC2:CC6.3, ISO27001:A.8.2]

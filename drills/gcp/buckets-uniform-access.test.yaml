@@ -1,0 +1,21 @@
+firedrill: v0
+drill: gcp/buckets-uniform-access
+cases:
+  - name: every bucket is uniform
+    expect: PASS
+    target: {name: acme-prod, number: "123", member_domains: [acme.com]}
+    facts:
+      buckets:
+        - {name: logs, public_grants: [], public_access_prevention: enforced, uniform_access: true}
+  - name: one bucket still uses object ACLs
+    expect: FAIL
+    target: {name: acme-prod, number: "123", member_domains: [acme.com]}
+    facts:
+      buckets:
+        - {name: logs, public_grants: [], public_access_prevention: enforced, uniform_access: true}
+        - {name: uploads, public_grants: [], public_access_prevention: inherited, uniform_access: false}
+  - name: no buckets
+    expect: N/A
+    target: {name: acme-prod, number: "123", member_domains: [acme.com]}
+    facts:
+      buckets: []

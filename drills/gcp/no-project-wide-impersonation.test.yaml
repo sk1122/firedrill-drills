@@ -1,0 +1,27 @@
+firedrill: v0
+drill: gcp/no-project-wide-impersonation
+cases:
+  - name: only service accounts hold the roles
+    expect: PASS
+    target: {name: acme-prod, number: "123", member_domains: [acme.com]}
+    facts:
+      bindings:
+        - {role: roles/owner, member_type: user, member_domain: acme.com, member: "", google_managed: false, default_account: false, conditional: false}
+        - {role: roles/iam.serviceAccountUser, member_type: service_account, member_domain: acme-prod.iam.gserviceaccount.com, member: deploy@acme-prod.iam.gserviceaccount.com, google_managed: false, default_account: false, conditional: false}
+  - name: a person can act as every service account
+    expect: FAIL
+    target: {name: acme-prod, number: "123", member_domains: [acme.com]}
+    facts:
+      bindings:
+        - {role: roles/iam.serviceAccountTokenCreator, member_type: user, member_domain: acme.com, member: "", google_managed: false, default_account: false, conditional: false}
+  - name: a group holds Service Account User
+    expect: FAIL
+    target: {name: acme-prod, number: "123", member_domains: [acme.com]}
+    facts:
+      bindings:
+        - {role: roles/iam.serviceAccountUser, member_type: group, member_domain: acme.com, member: "", google_managed: false, default_account: false, conditional: false}
+  - name: no bindings
+    expect: N/A
+    target: {name: acme-prod, number: "123", member_domains: [acme.com]}
+    facts:
+      bindings: []

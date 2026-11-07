@@ -1,0 +1,18 @@
+firedrill: v0
+drill: access/all-users-use-mfa
+cases:
+  - name: everyone enforced
+    expect: PASS
+    facts:
+      users:
+        - {email: a@acme.com, suspended: false, is_admin: false, is_delegated_admin: false, mfa_enrolled: true, mfa_enforced: true, last_login: "2026-11-01T00:00:00Z", days_since_login: 6, days_since_created: 300}
+        - {email: b@acme.com, suspended: true, is_admin: false, is_delegated_admin: false, mfa_enrolled: false, mfa_enforced: false, last_login: "", days_since_login: -1, days_since_created: 900}
+  - name: a non-admin is only enrolled, not enforced
+    expect: FAIL
+    facts:
+      users:
+        - {email: a@acme.com, suspended: false, is_admin: false, is_delegated_admin: false, mfa_enrolled: true, mfa_enforced: false, last_login: "2026-11-01T00:00:00Z", days_since_login: 6, days_since_created: 300}
+  - name: no users returned
+    expect: N/A
+    facts:
+      users: []

@@ -1,0 +1,16 @@
+firedrill: v0
+id: access/no-unused-aws-keys
+safeguard: "No IAM user with access keys has gone 90 days without using its credentials."
+source: "https://hub.powerpipe.io/mods/turbot/aws_compliance/controls/control.iam_user_unused_credentials_90"
+author: "@sk1122"
+severity: medium
+fetch:
+  principals: { fact: aws.principals }
+applies_when: principals.filter(p, p.kind == "user" && p.keys.size() > 0).size() > 0
+na_reason: "no IAM user has access keys"
+pass_when:
+  - >-
+    principals.filter(p, p.kind == "user" && p.keys.size() > 0 && !p.excluded &&
+    (p.days_since_used > 90 || (p.days_since_used < 0 && p.days_since_created > 90))).size() == 0
+fix: "Delete the access keys of users that no longer need them, or remove the users; move remaining workloads to roles."
+maps_to: [SOC2:CC6.2, ISO27001:A.5.18]

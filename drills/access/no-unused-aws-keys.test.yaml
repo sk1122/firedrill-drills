@@ -1,0 +1,24 @@
+firedrill: v0
+drill: access/no-unused-aws-keys
+cases:
+  - name: keys used last week
+    expect: PASS
+    facts:
+      principals:
+        - {account: "111", kind: user, name: ci, last_used: "2026-11-01T00:00:00Z", keys: [AKIAEXAMPLEKEY1], is_admin: false, destructive_actions: [], excluded: false, days_since_used: 6, days_since_created: 400}
+        - {account: "111", kind: role, name: deploy, last_used: "", keys: [], is_admin: false, destructive_actions: [], excluded: false, days_since_used: -1, days_since_created: 400}
+  - name: keys unused for 200 days
+    expect: FAIL
+    facts:
+      principals:
+        - {account: "111", kind: user, name: old-ci, last_used: "2026-04-21T00:00:00Z", keys: [AKIAEXAMPLEKEY2], is_admin: false, destructive_actions: [], excluded: false, days_since_used: 200, days_since_created: 700}
+  - name: keys never used, created long ago
+    expect: FAIL
+    facts:
+      principals:
+        - {account: "111", kind: user, name: never, last_used: "", keys: [AKIAEXAMPLEKEY3], is_admin: false, destructive_actions: [], excluded: false, days_since_used: -1, days_since_created: 300}
+  - name: no user has keys
+    expect: N/A
+    facts:
+      principals:
+        - {account: "111", kind: user, name: console-only, last_used: "", keys: [], is_admin: false, destructive_actions: [], excluded: false, days_since_used: -1, days_since_created: 300}

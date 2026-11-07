@@ -1,0 +1,16 @@
+firedrill: v0
+id: change/code-owner-review
+safeguard: "Changes to the default branch need approval from the code owners of the files they touch."
+source: "https://best.openssf.org/SCM-BestPractices/github/repository/code_review_not_limited_to_code_owners.html"
+author: "@sk1122"
+severity: high
+for_each: github.repos
+fetch:
+  rules: { fact: github.branch_rules, args: { branch: default } }
+applies_when: target.protection_available
+na_reason: "the plan has no branch protection on private repos"
+pass_when:
+  - rules.required_approvals >= 1
+  - rules.code_owner_review == true
+fix: "Add a CODEOWNERS file covering the code that matters, then turn on Require review from Code Owners in the default branch's protection or ruleset."
+maps_to: [SOC2:CC8.1, ISO27001:A.8.32]

@@ -1,0 +1,15 @@
+firedrill: v0
+id: gcp/buckets-uniform-access
+safeguard: "Every Cloud Storage bucket uses uniform bucket-level access, so no single file can be shared through an object ACL."
+source: "https://hub.powerpipe.io/mods/turbot/gcp_compliance/controls/control.cis_v200_5_2"
+author: "@sk1122"
+severity: medium
+for_each: gcp.projects
+fetch:
+  buckets: { fact: gcp.buckets }
+applies_when: buckets.size() > 0
+na_reason: "the project has no buckets"
+pass_when:
+  - buckets.filter(b, !b.uniform_access).size() == 0
+fix: "Turn on uniform bucket-level access for each bucket, after moving any object ACL grants into the bucket's IAM policy."
+maps_to: [SOC2:CC6.1, ISO27001:A.8.3]

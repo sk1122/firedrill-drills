@@ -1,0 +1,14 @@
+firedrill: v0
+id: access/all-users-use-mfa
+safeguard: "Every active user, not only admins, has 2-Step Verification enforced."
+source: "https://hub.powerpipe.io/mods/turbot/steampipe-mod-googleworkspace-compliance/controls/control.cis_v120_4_1_1_3"
+author: "@sk1122"
+severity: high
+fetch:
+  users: { fact: identity.users }
+applies_when: users.size() > 0
+na_reason: "the directory returned no users"
+pass_when:
+  - users.filter(u, !u.suspended && !u.mfa_enforced).size() == 0
+fix: "Enforce 2-Step Verification for every organizational unit, with a short enrollment window for new users."
+maps_to: [SOC2:CC6.1, ISO27001:A.8.5]

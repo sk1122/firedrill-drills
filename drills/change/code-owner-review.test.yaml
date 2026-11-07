@@ -1,0 +1,23 @@
+firedrill: v0
+drill: change/code-owner-review
+cases:
+  - name: code owners must approve
+    expect: PASS
+    target: {name: acme/api, private: true, plan: team, protection_available: true}
+    facts:
+      rules: {required_approvals: 1, code_owner_review: true, dismiss_stale: true, bypass: none, bypass_source: api, force_push_allowed: false, deletion_allowed: false}
+  - name: any reviewer will do
+    expect: FAIL
+    target: {name: acme/api, private: true, plan: team, protection_available: true}
+    facts:
+      rules: {required_approvals: 1, code_owner_review: false, dismiss_stale: true, bypass: none, bypass_source: api, force_push_allowed: false, deletion_allowed: false}
+  - name: code owners on, but no approval required
+    expect: FAIL
+    target: {name: acme/api, private: true, plan: team, protection_available: true}
+    facts:
+      rules: {required_approvals: 0, code_owner_review: true, dismiss_stale: false, bypass: none, bypass_source: api, force_push_allowed: false, deletion_allowed: false}
+  - name: free plan, private repo
+    expect: N/A
+    target: {name: acme/api, private: true, plan: free, protection_available: false}
+    facts:
+      rules: {required_approvals: 0, code_owner_review: false, dismiss_stale: false, bypass: none, bypass_source: api, force_push_allowed: true, deletion_allowed: true}
