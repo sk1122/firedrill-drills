@@ -4,6 +4,9 @@ on:
   pull_request:
 permissions:
   contents: read
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -12,18 +15,8 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: "1.27"
-      # While sk1122/firedrill is private, FIREDRILL_SOURCE_TOKEN is a fine-grained
-      # token with read-only Contents on that repo alone.
       - name: Install Firedrill
-        env:
-          GOPRIVATE: github.com/sk1122/firedrill
-          SOURCE_TOKEN: ${{ secrets.FIREDRILL_SOURCE_TOKEN }}
-          FIREDRILL_REF: a990ed613e11da59baedbafa07646866c7f7acfb
-        run: |
-          auth="url.https://x-access-token:${SOURCE_TOKEN}@github.com/sk1122/firedrill.insteadOf"
-          git config --global "$auth" https://github.com/sk1122/firedrill
-          go install "github.com/sk1122/firedrill/cmd/firedrill@${FIREDRILL_REF}"
-          git config --global --unset-all "$auth"
+        run: go install github.com/sk1122/firedrill/cmd/firedrill@v0.1.0
       - name: Validate every drill
         run: firedrill validate drills
       - name: Run every drill's test cases
@@ -32,7 +25,20 @@ jobs:
         run: firedrill hub index . --out site/index.json
       - name: Build the website
         run: firedrill hub site . --out site
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          name: hub-site
           path: site
+  pages:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

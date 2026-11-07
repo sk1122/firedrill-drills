@@ -1,0 +1,15 @@
+name: Propose a drill
+description: A safeguard you'd like a drill for
+labels: [drill idea]
+body:
+  - type: input
+    id: safeguard
+    attributes: { label: The safeguard, description: "The rule, in one sentence: \"Nobody merges to main alone.\"" }
+    validations: { required: true }
+  - type: textarea
+    id: systems
+    attributes: { label: Where it's checked, description: The system and the settings or data that show whether it holds }
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes: { label: Why it matters, description: An incident, a control it supports, or a mistake it would catch }
